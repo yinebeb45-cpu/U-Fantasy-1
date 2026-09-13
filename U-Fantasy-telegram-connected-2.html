@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>U-Fantasy</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0b0c0f;--panel:#111317;--card:#191b20;--card2:#15171b;--gold:#f5c542;--gold2:#ffd95c;--text:#f4f5f7;--muted:#9298a2;--gray:#c4c8cf;--danger:#ff6b6b;--line:rgba(255,255,255,.09);--shadow:0 14px 38px rgba(0,0,0,.30)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#08090b;color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}
+button,input,textarea,select{font:inherit}
+button{border:0;color:inherit;cursor:pointer}
+.app{max-width:720px;margin:auto;min-height:100vh;background:linear-gradient(180deg,#0b0c0f 0%,#101216 100%);padding-bottom:88px}
+.topbar{position:sticky;top:0;z-index:20;height:58px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;background:rgba(11,12,15,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.brand{font-weight:900;letter-spacing:.8px;font-size:18px}.brand span{color:var(--gold)}
+.top-actions{display:flex;gap:8px}.icon-btn{width:36px;height:36px;border-radius:12px;background:#181a1f;border:1px solid var(--line);display:grid;place-items:center}
+.page{display:none;padding:20px 16px}.page.active{display:block}
+.eyebrow{font-size:12px;color:var(--muted);margin-bottom:5px}.title{font-size:27px;line-height:1.12;margin:0 0 7px;font-weight:850;letter-spacing:-.5px}.section-title{font-size:18px;margin:24px 0 11px;font-weight:800}
+.sub{font-size:13px;color:var(--muted);line-height:1.45}
+.card{background:linear-gradient(145deg,#1b1e23,#15171b);border:1px solid rgba(255,255,255,.07);border-radius:22px;box-shadow:var(--shadow)}
+.gold{color:var(--gold)}
+.btn{min-height:43px;padding:0 16px;border-radius:13px;font-weight:800;font-size:13px;background:var(--gold);color:#111315}.btn.secondary{background:#202329;color:var(--text);border:1px solid var(--line)}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.wrap{display:flex;flex-wrap:wrap;gap:9px}
+.hero{padding:22px;border-radius:25px;background:radial-gradient(circle at 100% 0%,rgba(245,197,66,.14),transparent 38%),linear-gradient(145deg,#202329,#121418);border:1px solid rgba(245,197,66,.15);overflow:hidden;position:relative}
+.hero:after{content:"";position:absolute;width:180px;height:180px;border:1px solid rgba(245,197,66,.08);border-radius:50%;right:-80px;bottom:-80px}
+.balance-card{padding:17px;margin-top:14px;background:#15171b;border:1px solid var(--line);border-radius:17px}
+.balance{font-size:24px;font-weight:900}.balance small{font-size:12px;color:var(--muted);font-weight:700}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.fixture-strip,.market-grid{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(150px,1fr);overflow-x:auto;gap:10px;padding-bottom:3px;scrollbar-width:none}.fixture-strip::-webkit-scrollbar,.market-grid::-webkit-scrollbar{display:none}
+.fixture{padding:14px;border-radius:17px;min-height:125px}.fixture .teams{font-weight:800;font-size:13px}.fixture .date{color:var(--muted);font-size:11px;margin-top:12px}.fixture .score{color:var(--gold);font-size:18px;font-weight:900;margin-top:9px}
+.leader-preview{overflow:hidden}.leader-row{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:9px;padding:13px 14px;border-bottom:1px solid var(--line)}.leader-row:last-child{border-bottom:0}.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#3a3e46;font-size:11px;font-weight:900}.rank{font-weight:900;color:var(--gold)}.pts{font-weight:900}
+.contest-tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;background:#15171b;padding:5px;border-radius:15px;margin-bottom:14px}.tab{padding:12px 8px;border-radius:11px;background:transparent;color:var(--muted);font-weight:800;font-size:12px}.tab.active{background:var(--gold);color:#111315}
+.notice{padding:12px 14px;border-radius:14px;background:#1a1d22;border:1px solid rgba(245,197,66,.14);font-size:12px;color:#dbe2de;margin-bottom:13px}
+.contest-card{padding:17px;margin-bottom:12px}.contest-head{display:flex;justify-content:space-between;gap:12px}.contest-name{font-size:17px;font-weight:900}.entry{font-size:17px;font-weight:900;color:var(--gold)}.contest-meta{font-size:11px;color:var(--muted);margin-top:4px}.pool{margin-top:14px;padding:14px;border-radius:16px;background:#171a1f}.pool-top{font-size:11px;color:var(--muted)}.pool-value{font-size:22px;font-weight:900;color:var(--gold);margin-top:3px}.prize-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.prize-box{background:#202329;border-radius:11px;padding:9px}.prize-box b{display:block;font-size:12px}.prize-box span{font-size:11px;color:var(--gray);font-weight:800}.contest-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+.league-select{display:flex;gap:8px;overflow:auto;margin-bottom:14px}.league-pill{white-space:nowrap;padding:10px 14px;border-radius:12px;background:#1c1f24;color:var(--muted);font-weight:800;font-size:12px;border:1px solid var(--line)}.league-pill.active{background:#f5c542;color:#111315}
+.table-head,.table-row{display:grid;grid-template-columns:38px 1fr 62px 78px;gap:5px;align-items:center}.table-head{padding:9px 12px;color:var(--muted);font-size:10px;text-transform:uppercase}.table-row{padding:11px 12px;background:#1b1e23;border-bottom:1px solid rgba(255,255,255,.05)}.table-row:first-of-type{border-radius:15px 15px 0 0}.table-row:last-child{border-radius:0 0 15px 15px;border-bottom:0}.usercell{display:flex;align-items:center;gap:8px;min-width:0}.username{font-size:12px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.locked{font-size:10px;color:var(--muted)}.prize{color:var(--gray);font-weight:900;font-size:11px;text-align:right}.points{text-align:right;font-weight:900;font-size:12px}
+.podium{display:grid;grid-template-columns:1fr 1.08fr 1fr;gap:7px;align-items:end;margin:12px 0 17px}.pod{padding:13px 8px;text-align:center;border-radius:16px;background:#202329}.pod.first{padding-top:22px;background:linear-gradient(145deg,#30343b,#1b1e23)}.pod .medal{font-size:21px}.pod .pod-name{font-size:11px;font-weight:900;margin-top:5px}.pod .pod-points{font-size:12px;color:var(--gold);font-weight:900;margin-top:3px}
+.squad-top{padding:17px}.budget{font-size:24px;font-weight:900}.budget small{font-size:12px;color:var(--muted)}.pitch{margin-top:13px;padding:20px 10px;border-radius:20px;background:radial-gradient(circle,#363b43 0,#20242a 58%,#15171b 100%);border:1px solid rgba(255,255,255,.08)}.line{display:flex;justify-content:center;gap:9px;margin:14px 0}.slot{width:72px;text-align:center}.shirt{width:46px;height:46px;margin:auto;border-radius:13px;background:#15171b;border:1px dashed rgba(255,255,255,.2);display:grid;place-items:center;color:var(--gold);font-size:17px}.slot.filled .shirt{background:#f5c542;color:#111315;border-style:solid}.slot-name{font-size:9px;font-weight:800;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.slot-price{font-size:8px;color:var(--muted)}.formation-row{display:flex;gap:7px;overflow:auto;padding-bottom:2px}.formation{padding:9px 12px;border-radius:11px;background:#1c1f24;border:1px solid var(--line);font-size:11px;font-weight:800;white-space:nowrap}.formation.active{background:var(--gold);color:#111315}
+.search{width:100%;height:43px;background:#15171b;border:1px solid var(--line);border-radius:13px;padding:0 13px;color:var(--text);outline:none}.search:focus{border-color:rgba(245,197,66,.45)}
+.market-card{padding:13px;border-radius:16px;min-width:205px}.market-card .pname{font-weight:900;font-size:13px}.market-card .club{font-size:10px;color:var(--muted)}.market-card .price{font-weight:900;color:var(--gold);font-size:14px}.market-list{display:grid;gap:8px;margin-top:12px}.market-row{padding:13px;border-radius:15px;background:#1b1e23;border:1px solid var(--line)}
+.wallet-hero{padding:20px}.wallet-balance{font-size:32px;font-weight:950;margin-top:3px}.wallet-balance small{font-size:12px;color:var(--muted)}.wallet-tabs{display:grid;grid-template-columns:1fr 1fr;background:#15171b;padding:4px;border-radius:13px;margin:14px 0}.wallet-tab{padding:10px;border-radius:10px;background:transparent;color:var(--muted);font-size:12px;font-weight:900}.wallet-tab.active{background:#2a2e35;color:var(--gold)}.field{margin:10px 0}.field label{display:block;color:var(--muted);font-size:11px;font-weight:800;margin-bottom:6px}.field input,.field textarea{width:100%;background:#0f1115;border:1px solid var(--line);border-radius:13px;color:var(--text);padding:12px;outline:none}.field textarea{min-height:135px;resize:vertical}.telebirr{padding:15px;background:#15171b;border:1px solid rgba(245,197,66,.16);border-radius:16px}.number{font-size:20px;font-weight:950;letter-spacing:1px;margin:4px 0}.status{margin-top:10px;padding:11px;border-radius:12px;font-size:11px}.status.ok{background:rgba(196,200,207,.10);color:var(--gray)}.status.bad{background:rgba(255,107,107,.1);color:var(--danger)}.status.wait{background:rgba(245,197,66,.1);color:var(--gold)}
+.history{display:grid;gap:8px}.history-item{padding:13px;border-radius:15px;background:#1b1e23}.history-item .amount{font-weight:900}.history-item .state{font-size:10px;color:var(--muted)}.empty{padding:25px;text-align:center;color:var(--muted);font-size:12px;background:#171a1f;border-radius:15px}
+.profile-card{padding:20px;text-align:center}.profile-avatar{width:65px;height:65px;border-radius:22px;margin:auto;display:grid;place-items:center;background:var(--gold);color:#111315;font-size:25px;font-weight:950}.profile-name{font-size:20px;font-weight:950;margin-top:10px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:15px}.stat{padding:12px 6px;border-radius:13px;background:#1a1d22}.stat b{display:block;font-size:16px}.stat span{font-size:9px;color:var(--muted)}.settingsless{display:grid;gap:8px;margin-top:13px}.menu-btn{padding:14px;border-radius:14px;background:#1b1e23;text-align:left;font-size:12px;font-weight:800;border:1px solid var(--line)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:flex-end;z-index:60}.modal.show{display:flex}.sheet{width:100%;max-width:720px;margin:auto;background:#121419;border:1px solid var(--line);border-radius:24px 24px 0 0;padding:17px;max-height:82vh;overflow:auto}.sheet-title{font-size:16px;font-weight:900;margin-bottom:12px}.close{float:right;background:#23272d;border-radius:10px;width:32px;height:32px}.picker{display:grid;gap:7px}.pick-row{padding:12px;border-radius:13px;background:#1c1f24;display:flex;justify-content:space-between;align-items:center}.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(15px);opacity:0;pointer-events:none;background:#f5c542;color:#111315;padding:11px 15px;border-radius:12px;font-size:12px;font-weight:900;z-index:100;transition:.22s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;background:rgba(11,12,15,.96);border-top:1px solid var(--line);backdrop-filter:blur(16px);padding:7px 6px calc(7px + env(safe-area-inset-bottom));}.nav-inner{width:100%;max-width:720px;display:grid;grid-template-columns:repeat(5,1fr);gap:3px}.nav-item{background:transparent;color:#9298a2;border-radius:14px;padding:8px 3px;font-size:9px;font-weight:800}.nav-item.active{background:#25292f;color:var(--gold)}.nav-icon{display:block;font-size:18px;line-height:18px;margin-bottom:3px}
+.loading{position:fixed;inset:0;background:#08090b;z-index:200;display:grid;place-items:center}.loading.hide{animation:fade .4s forwards}.loader{text-align:center}.ball{font-size:42px;animation:bounce 1s infinite}.loader b{display:block;font-size:18px;letter-spacing:2px;color:var(--gold);margin-top:8px}@keyframes bounce{50%{transform:translateY(-9px)}}@keyframes fade{to{opacity:0;visibility:hidden}}
+@media(min-width:650px){.page{padding:24px}.app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
+
+/* refined charcoal / gold design */
+body{letter-spacing:.01em}.app{background:radial-gradient(circle at 50% -10%,rgba(245,197,66,.055),transparent 30%),linear-gradient(180deg,#090a0c,#111316 62%,#0c0e10)}
+.topbar{height:62px;background:rgba(9,10,12,.9);border-bottom-color:rgba(255,255,255,.06)}.brand{font-size:17px;letter-spacing:1.2px}.icon-btn{background:#17191d;border-color:#262a30;border-radius:13px}
+.page{padding:19px 15px}.title{font-size:25px;letter-spacing:-.7px}.section-title{font-size:16px;margin-top:22px}.card{border-color:#262a30;background:linear-gradient(145deg,#1a1d21,#141619);box-shadow:0 12px 30px rgba(0,0,0,.22)}
+.hero{background:linear-gradient(145deg,#22262b,#15181b 70%);border-color:#30343a;box-shadow:0 18px 45px rgba(0,0,0,.28)}.balance-card{background:#101215;border-color:#272b31}.btn{box-shadow:0 7px 18px rgba(245,197,66,.08)}.btn.secondary{background:#292d33;border-color:#343941}.btn.ghost{background:#16181b;border-color:#2c3036;color:#c2c6cc}
+.contest-tabs,.wallet-tabs{background:#111316;border:1px solid #24282d}.tab.active{background:#d9b13c}.league-pill.active{background:#d9b13c}.contest-card{background:linear-gradient(145deg,#1d2024,#151719)}.pool{background:#111316;border:1px solid #272b30}.prize-box{background:#25292e;border:1px solid #30343a}.notice{background:#171a1e;border-color:#2b3036}
+.podium .pod{background:#25292e;border:1px solid #30343a}.pod.first{background:linear-gradient(145deg,#30353b,#202328)}.table-row{background:#191c20}.table-row:hover{background:#20242a}.avatar{background:#333840}.market-status{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:11px 0;padding:11px 12px;border-radius:14px;background:#15181b;border:1px solid #292e34;color:#aeb3bb;font-size:10px}.sync-btn{background:#292e34;border:1px solid #363b42;border-radius:10px;padding:7px 10px;font-size:10px;font-weight:850}.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#d9b13c;margin-right:6px;box-shadow:0 0 10px rgba(217,177,60,.45)}
+.market-row{background:#191c20;border-color:#2a2e34}.market-card{background:#1a1d21}.pitch{background:radial-gradient(circle at 50% 0%,#363b42,#22262b 55%,#151719);border-color:#30353b}.shirt{background:#111316}.slot.filled .shirt{background:#d9b13c}.formation{background:#1c2024;border-color:#2d3238}.formation.active{background:#d9b13c}.wallet-hero{background:linear-gradient(145deg,#1c2024,#131518);border-color:#2b3036}.telebirr{background:#15181b;border-color:#30353b}.wallet-tab.active{background:#292e34;color:#e3bf4b}.profile-card{background:linear-gradient(145deg,#1d2024,#151719)}.menu-btn{background:#191c20;border-color:#2a2e34}.bottom-nav{background:rgba(10,11,13,.96);border-top-color:#262a30}.nav-item.active{background:#292e34;color:#e3bf4b}
+.captain-box{margin-top:13px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#191c20}.captain-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.cap-card{background:#111316;border:1px solid #2d3238;border-radius:13px;padding:12px;min-height:58px}.cap-card .cap-label{font-size:9px;letter-spacing:.08em;color:var(--muted);font-weight:900;text-transform:uppercase}.cap-card .cap-name{font-size:13px;font-weight:900;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cap-card.active{border-color:#d9b13c}.cap-actions{display:flex;gap:7px;margin-top:10px}.cap-btn{flex:1;padding:9px 8px;border-radius:10px;border:1px solid #30353b;background:#20242a;color:#eee;font-size:10px;font-weight:900}.cap-btn.active{background:#d9b13c;color:#111315;border-color:#d9b13c}.cap-help{font-size:10px;color:var(--muted);margin-top:9px;line-height:1.45}.badge-cap,.badge-vc{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;margin-left:3px;font-size:9px;font-weight:950;vertical-align:middle}.badge-cap{background:#d9b13c;color:#111315}.badge-vc{background:#30353b;color:#fff}</style>
+</head>
+<body>
+<div class="loading" id="loading"><div class="loader"><div class="ball">⚽</div><b>U-FANTASY</b><div class="sub">Play smart. Climb higher.</div></div></div>
+
+<div class="app">
+<header class="topbar">
+  <div class="brand">U-<span>FANTASY</span></div>
+  <div class="top-actions"><button class="icon-btn" onclick="toggleLanguage()" title="Language">文</button><button class="icon-btn" onclick="showPage('profile')" title="Profile">●</button></div>
+</header>
+
+<!-- HOME -->
+<section class="page active" id="home">
+  <div class="eyebrow" data-i18n="welcome">Welcome back</div>
+  <h1 class="title" id="welcomeName">Player</h1>
+  <p class="sub" data-i18n="homeSub">Build your squad, join the contest and chase the top.</p>
+
+  <div class="hero" style="margin-top:16px">
+    <div class="eyebrow gold">THIS WEEK</div>
+    <div class="row"><div><div style="font-size:21px;font-weight:950">Premier League</div><div class="sub">Gameweek 5 • Open</div></div><div style="text-align:right"><div class="entry">ETB 100</div><div class="contest-meta">entry</div></div></div>
+    <div class="balance-card"><div class="row"><span class="sub">Prize pool</span><b class="gold" id="homePrize">ETB 14,556</b></div><div class="sub" style="margin-top:3px">Top 10 prizes • live entrants</div></div>
+    <div class="actions"><button class="btn" onclick="showPage('contests')" data-i18n="viewContest">View contest</button><button type="button" class="btn secondary" onclick="showPage('squad',this)" data-i18n="buildSquad">Build squad</button></div>
+  </div>
+
+  <h2 class="section-title" data-i18n="fixtures">Fixtures</h2>
+  <div class="fixture-strip" id="homeFixtures"></div>
+  <div class="row" style="margin-top:11px"><h2 class="section-title" style="margin:0" data-i18n="leaderboard">Leaderboard</h2><button class="btn ghost" onclick="showPage('leaderboard')" data-i18n="viewAll">View all</button></div>
+  <div class="card leader-preview" id="homeLeaderboard" style="margin-top:10px"></div>
+
+  <h2 class="section-title" data-i18n="quickActions">Quick actions</h2>
+  <div class="wrap">
+    <button class="btn secondary" onclick="showPage('wallet')">💳 <span data-i18n="wallet">Wallet</span></button>
+    <button class="btn secondary" onclick="showPage('market')">⚽ <span data-i18n="market">Player market</span></button>
+    <button class="btn secondary" onclick="inviteFriends()">↗ <span data-i18n="invite">Invite friends</span></button>
+  </div>
+</section>
+
+<!-- CONTESTS -->
+<section class="page" id="contests">
+  <div class="eyebrow" data-i18n="playAndWin">PLAY & WIN</div>
+  <h1 class="title" data-i18n="contestsTitle">Contests</h1>
+  <p class="sub" data-i18n="contestsSub">Choose your league and enter with your ETB balance.</p>
+  <div class="contest-tabs" style="margin-top:15px"><button class="tab active" id="eplTab" onclick="setContestLeague('epl')">Premier League</button><button class="tab" id="uclTab" onclick="setContestLeague('ucl')">Champions League</button></div>
+  <div class="notice">🏆 <b>Prize pool grows with entries.</b> Rewards are calculated automatically and never exceed the pool.</div>
+  <div id="contestList"></div>
+</section>
+
+<!-- LEADERBOARD -->
+<section class="page" id="leaderboard">
+  <div class="eyebrow" data-i18n="rankings">RANKINGS</div>
+  <h1 class="title" data-i18n="leaderboard">Leaderboard</h1>
+  <p class="sub" data-i18n="leaderSub">See how you are performing against the other players.</p>
+  <div class="league-select" style="margin-top:15px"><button class="league-pill active" id="lbEpl" onclick="setLeaderboardLeague('epl')">Premier League</button><button class="league-pill" id="lbUcl" onclick="setLeaderboardLeague('ucl')">Champions League</button></div>
+  <div class="card" id="leaderboardBox"></div>
+</section>
+
+<!-- SQUAD -->
+<section class="page" id="squad">
+  <div class="eyebrow">MY TEAM</div>
+  <h1 class="title" data-i18n="squadTitle">Build Your Squad</h1>
+  <div class="league-select squad-leagues" style="margin-top:15px"><button class="league-pill active" id="sEpl" onclick="setSquadLeague('epl')">Premier League</button><button class="league-pill" id="sUcl" onclick="setSquadLeague('ucl')">Champions League</button></div><div class="card squad-top"><div class="row"><div><div class="sub">Squad budget • <span id="squadLeagueLabel">Premier League</span></div><div class="budget"><span id="remainingBudget">£100.0M</span> <small>remaining</small></div></div><button class="btn secondary" onclick="openSquadMarket()">Market</button></div><div class="formation-row" id="formations" style="margin-top:13px"></div></div>
+  <div class="pitch" id="pitch"></div>
+  <div class="captain-box"><b>Captain & Vice-Captain</b><div class="sub">Captain earns 2× points • vice-captain is the backup</div><div class="captain-grid" style="margin-top:10px"><div class="cap-card" id="captainCard"><div class="cap-label">Captain</div><div class="cap-name" id="captainName">Not selected</div></div><div class="cap-card" id="viceCard"><div class="cap-label">Vice-Captain</div><div class="cap-name" id="viceName">Not selected</div></div></div><div class="cap-actions"><button class="cap-btn active" id="capModeBtn" onclick="setCaptainMode('captain')">Choose Captain</button><button class="cap-btn" id="vcModeBtn" onclick="setCaptainMode('vice')">Choose Vice</button></div><div class="cap-help">Select a mode, then tap a player on the pitch. Captain and vice-captain must be different.</div></div>
+  <div class="row" style="margin-top:14px"><span class="sub" id="squadCost">£0M / £100M</span><button class="btn" onclick="saveSquad()">Save squad</button></div>
+  <div class="notice" style="margin-top:13px">Squad rules: 1 GK • 3–5 DEF • 2–5 MID • 1–3 FWD • 11 players • no duplicates.</div>
+</section>
+
+<!-- MARKET -->
+<section class="page" id="market">
+  <div class="eyebrow">PLAYERS</div>
+  <h1 class="title">Market</h1>
+  <p class="sub">Player prices use £M only. Contest money and wallet money always use ETB.</p>
+  <div class="league-select" style="margin-top:15px"><button class="league-pill active" id="mEpl" onclick="setMarketLeague('epl')">Premier League</button><button class="league-pill" id="mUcl" onclick="setMarketLeague('ucl')">Champions League</button></div>
+  <input class="search" id="marketSearch" placeholder="Search player or club..." oninput="renderMarket()">
+  <div class="market-status"><span><span class="live-dot"></span><b id="marketLiveLabel">Live market</b> <span id="marketSyncText">Waiting for sync…</span></span><button class="sync-btn" onclick="syncMarket(true)">Sync now</button></div>
+  <div class="market-list" id="marketList"></div>
+</section>
+
+<!-- FIXTURES -->
+<section class="page" id="fixtures">
+  <div class="eyebrow">MATCHES</div><h1 class="title">Fixtures</h1><p class="sub">Upcoming matches and live fantasy action.</p>
+  <div class="fixture-strip" id="fixturePage" style="margin-top:16px;grid-auto-flow:row;grid-auto-columns:unset;grid-template-columns:1fr 1fr"></div>
+</section>
+
+<!-- WALLET -->
+<section class="page" id="wallet">
+  <div class="eyebrow">YOUR FUNDS</div><h1 class="title">Wallet</h1>
+  <div class="card wallet-hero"><div class="sub">Available balance</div><div class="wallet-balance" id="walletBalance">ETB 350.00</div><div class="sub" style="margin-top:4px">Your wallet is used for ETB 100 contest entries and winnings.</div></div>
+  <div class="wallet-tabs"><button class="wallet-tab active" id="depositTab" onclick="setWalletMode('deposit')">Deposit</button><button class="wallet-tab" id="withdrawTab" onclick="setWalletMode('withdraw')">Withdraw</button></div>
+  <div id="walletForm"></div>
+</section>
+
+<!-- PROFILE -->
+<section class="page" id="profile">
+  <div class="eyebrow">ACCOUNT</div><h1 class="title">Profile</h1>
+  <div class="card profile-card"><div class="profile-avatar" id="profileAvatar">P</div><div class="profile-name" id="profileName">Player</div><div class="sub" id="profileUsername">@player</div>
+    <div class="stats"><div class="stat"><b id="statRank">#—</b><span>RANK</span></div><div class="stat"><b id="statPoints">0</b><span>POINTS</span></div><div class="stat"><b id="statEntries">0</b><span>ENTRIES</span></div></div>
+  </div>
+  <div class="settingsless"><button class="menu-btn" onclick="inviteFriends()">↗ Invite friends <span style="float:right;color:var(--gold)">→</span></button><button class="menu-btn" onclick="showPage('leaderboard')">🏆 Leaderboard <span style="float:right;color:var(--gold)">→</span></button><button class="menu-btn" onclick="showPage('market')">⚽ Player market <span style="float:right;color:var(--gold)">→</span></button><button class="menu-btn" onclick="toggleLanguage()">文 English / አማርኛ <span style="float:right;color:var(--gold)">→</span></button></div>
+  <div class="notice" style="margin-top:13px">DEMO MODE: payment verification, balances and contest results are simulated in this browser until a secure backend is connected.</div>
+</section>
+</div>
+
+<nav class="bottom-nav"><div class="nav-inner">
+  <button class="nav-item active" data-page="home" onclick="showPage('home',this)"><span class="nav-icon">⌂</span>Home</button>
+  <button class="nav-item" data-page="contests" onclick="showPage('contests',this)"><span class="nav-icon">🏆</span>Contests</button>
+  <button class="nav-item" data-page="squad" onclick="showPage('squad',this)"><span class="nav-icon">♟</span>Squad</button>
+  <button class="nav-item" data-page="wallet" onclick="showPage('wallet',this)"><span class="nav-icon">▣</span>Wallet</button>
+  <button class="nav-item" data-page="profile" onclick="showPage('profile',this)"><span class="nav-icon">●</span>Profile</button>
+</div></nav>
+
+<div class="modal" id="modal"><div class="sheet"><button class="close" onclick="closeModal()">×</button><div class="sheet-title" id="modalTitle">Select player</div><div id="modalBody"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   SUPABASE CONNECTION
+   Publishable key is safe for browser use.
+   NEVER put a Supabase secret/service-role key here.
+   ========================================================= */
+const SUPABASE_URL="https://sijgkrtfflfverpwgbhe.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_9qllbCtCS1xEDFOI5OfcMw_D6lkKohD";
+const supabaseClient=(window.supabase&&typeof window.supabase.createClient==="function")
+  ? window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY)
+  : null;
+let DB_ONLINE=false;
+
+const SQUAD_BUDGET=100;
+const TELEBIRR_NUMBER="09XXXXXXXX"; // Replace with your official Telebirr number before launch.
+const PRIZE_POOL_RATE=.7278;
+const FIXTURES=[
+ {home:"Aston Villa",away:"Nottingham Forest",short:"AVL vs NFO",time:"Sat • 3:00 PM"},
+ {home:"Bournemouth",away:"Brentford",short:"BOU vs BRE",time:"Sat • 5:30 PM"},
+ {home:"Chelsea",away:"Hull City",short:"CHE vs HUL",time:"Sun • 4:00 PM"},
+ {home:"Man United",away:"Man City",short:"MUN vs MCI",time:"Sun • 6:30 PM"},
+ {home:"Leeds",away:"Newcastle",short:"LEE vs NEW",time:"Mon • 8:00 PM"}
+];
+const EPL_PLAYERS=[
+["Alisson","Liverpool","GK",5.5],["Raya","Arsenal","GK",5], ["Pickford","Everton","GK",5],["Ederson","Man City","GK",5.5],
+["Van Dijk","Liverpool","DEF",6.5],["Saliba","Arsenal","DEF",6],["Gabriel","Arsenal","DEF",6],["Trent","Liverpool","DEF",7],["Gvardiol","Man City","DEF",5.5],["Williamson","Chelsea","DEF",5],
+["Saka","Arsenal","MID",10],["Palmer","Chelsea","MID",10.5],["Salah","Liverpool","MID",12.5],["De Bruyne","Man City","MID",9],["Odegaard","Arsenal","MID",8.5],["Foden","Man City","MID",9],
+["Haaland","Man City","FWD",15],["Isak","Newcastle","FWD",8.5],["Watkins","Aston Villa","FWD",9],["Son","Tottenham","FWD",9.5]
+].map((x,i)=>({id:"e"+i,name:x[0],club:x[1],position:x[2],price:x[3]}));
+const UCL_PLAYERS=[
+["Donnarumma","Man City","GK",5.5],["Courtois","Real Madrid","GK",6],["Maignan","AC Milan","GK",5.5],["Neuer","Bayern","GK",5],
+["Rudiger","Real Madrid","DEF",6],["Davies","Bayern","DEF",5.5],["Hakimi","PSG","DEF",6.5],["Marquinhos","PSG","DEF",5.5],["Araujo","Barcelona","DEF",5.5],["Frimpong","Leverkusen","DEF",5.5],
+["Vinicius Jr","Real Madrid","MID",10.5],["Bellingham","Real Madrid","MID",9.5],["Musiala","Bayern","MID",9],["Yamal","Barcelona","MID",9],["Wirtz","Leverkusen","MID",8.5],["Vitinha","PSG","MID",7.5],
+["Mbappe","Real Madrid","FWD",12.5],["Kane","Bayern","FWD",11.5],["Dembele","PSG","FWD",10],["Lautaro","Inter","FWD",9.5]
+].map((x,i)=>({id:"u"+i,name:x[0],club:x[1],position:x[2],price:x[3]}));
+
+// Fallback records keep the prototype usable offline. Live data replaces them when available.
+const LIVE_MARKET={epl:[],ucl:[]};
+const MARKET_CACHE_KEY="uf_live_market_v2";
+const MARKET_SYNC_KEY="uf_market_sync_v2";
+const FPL_API="https://fantasy.premierleague.com/api/bootstrap-static/";
+const TSDB_BASE="https://www.thesportsdb.com/api/v1/json/123";
+const MARKET_REFRESH=5*60*1000;
+
+
+const DEMO_LEADERS=[
+["Arsenal",79],["Professor",76],["Djew",72],["Hunde",72],["Ounahi",70],["Andy",69],["Ak",69],["ET",68],["Henok",68],["Fkd",67],
+["vVv",64],["Hello",64],["Abel",64],["Yonas",63],["Burrito FC",63],["Sofie",62],["Nati",61],["Nahom",60],["Mule",60],["Ashenafi",59]
+];
+function loadSquadData(){
+  try{const saved=JSON.parse(localStorage.getItem("uf_demo_squads")||"null");if(saved&&Array.isArray(saved.epl)&&Array.isArray(saved.ucl))return saved}catch(e){}
+  try{const legacy=JSON.parse(localStorage.getItem("uf_demo_squad")||"[]");return {epl:Array.isArray(legacy)?legacy:[],ucl:[]}}catch(e){return {epl:[],ucl:[]}}
+}
+function loadFormation(league){return localStorage.getItem("uf_formation_"+league)||"4-3-3"}
+const squadData=loadSquadData();
+function loadCaptainData(){try{const x=JSON.parse(localStorage.getItem("uf_captains")||"null");if(x&&x.epl&&x.ucl)return x}catch(e){}return {epl:{captain:null,vice:null},ucl:{captain:null,vice:null}}}
+function currentCaptain(){return state.captains[state.squadLeague]||{captain:null,vice:null}}
+function saveCaptainData(){save("uf_captains",state.captains)}
+function setCaptainMode(mode){state.captainMode=mode;renderCaptainControls();showToast(mode==="captain"?"Choose a captain from your squad":"Choose a vice-captain from your squad")}
+function chooseCaptainPlayer(index){const p=state.squad[index];if(!p){showToast("Select a player first");return}const c=currentCaptain();if(state.captainMode==="captain"){if(c.vice&&String(c.vice.id)===String(p.id)){showToast("Captain and vice-captain must be different");return}c.captain=p}else{if(c.captain&&String(c.captain.id)===String(p.id)){showToast("Captain and vice-captain must be different");return}c.vice=p}state.captains[state.squadLeague]=c;saveCaptainData();renderSquad();showToast((state.captainMode==="captain"?"Captain":"Vice-captain")+" selected: "+p.name)}
+function renderCaptainControls(){const c=currentCaptain();const cn=document.getElementById("captainName"),vn=document.getElementById("viceName");if(cn)cn.textContent=c.captain?.name||"Not selected";if(vn)vn.textContent=c.vice?.name||"Not selected";document.getElementById("capModeBtn")?.classList.toggle("active",state.captainMode==="captain");document.getElementById("vcModeBtn")?.classList.toggle("active",state.captainMode==="vice");document.getElementById("captainCard")?.classList.toggle("active",!!c.captain);document.getElementById("viceCard")?.classList.toggle("active",!!c.vice)}
+const state={
+ page:"home",contestLeague:localStorage.getItem("uf_contest_league")||"epl",leaderLeague:localStorage.getItem("uf_league")||"epl",
+ marketLeague:localStorage.getItem("uf_market_league")||"epl",squadLeague:localStorage.getItem("uf_squad_league")||"epl",walletMode:"deposit",
+ balance:Number(localStorage.getItem("uf_demo_balance")||0),entries:Number(localStorage.getItem("uf_demo_entries")||0),
+ squad:squadData.epl,formation:loadFormation("epl"),squads:squadData,
+ language:localStorage.getItem("uf_demo_language")||"en",marketSync:Number(localStorage.getItem(MARKET_SYNC_KEY)||0),captains:loadCaptainData(),captainMode:"captain"
+};
+const formations=["3-4-3","3-5-2","4-3-3","4-4-2","4-5-1","5-2-3","5-3-2","5-4-1"];
+state.squad=state.squads[state.squadLeague]||[];state.formation=loadFormation(state.squadLeague);
+function currentSquad(){return state.squads[state.squadLeague]||[]}
+function setCurrentSquad(arr){state.squads[state.squadLeague]=arr;state.squad=arr}
+function saveAllSquads(){save("uf_demo_squads",state.squads)}
+const i18n={en:{welcome:"Welcome back",homeSub:"Build your squad, join the contest and chase the top.",viewContest:"View contest",buildSquad:"Build squad",fixtures:"Fixtures",leaderboard:"Leaderboard",viewAll:"View all",quickActions:"Quick actions",wallet:"Wallet",market:"Player market",invite:"Invite friends",playAndWin:"PLAY & WIN",contestsTitle:"Contests",contestsSub:"Choose your league and enter with your ETB balance",rankings:"RANKINGS",squadTitle:"Build Your Squad",leaderSub:"See how you are performing against the other players."},am:{welcome:"እንኳን ደህና መጡ",homeSub:"ቡድንዎን ይገንቡ፣ ውድድር ይግቡ እና ወደ ላይ ይውጡ።",viewContest:"ውድድሩን ይመልከቱ",buildSquad:"ቡድን ይገንቡ",fixtures:"ጨዋታዎች",leaderboard:"ደረጃ ሰንጠረዥ",viewAll:"ሁሉንም ይመልከቱ",quickActions:"ፈጣን አማራጮች",wallet:"ዋሌት",market:"የተጫዋቾች ገበያ",invite:"ጓደኞችን ይጋብዙ",playAndWin:"ተጫወት እና አሸንፍ",contestsTitle:"ውድድሮች",contestsSub:"ሊግዎን ይምረጡ እና በ ETB ይግቡ",rankings:"ደረጃዎች",squadTitle:"ቡድንዎን ይገንቡ",leaderSub:"ከሌሎች ተጫዋቾች ጋር ያለዎትን ደረጃ ይመልከቱ።"}};
+
+function save(k,v){localStorage.setItem(k,typeof v==="string"?v:JSON.stringify(v))}
+function money(n){return "ETB "+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window._toast);window._toast=setTimeout(()=>t.classList.remove("show"),2200)}
+function showPage(id,element){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ const target=document.getElementById(id);if(!target)return;target.classList.add("active");state.page=id;
+ document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+ const nav=document.querySelector('.nav-item[data-page="'+id+'"]');if(nav)nav.classList.add("active");
+ window.scrollTo({top:0,behavior:"smooth"});
+ if(id==="home")renderHome();if(id==="contests")renderContests();if(id==="leaderboard")renderLeaderboard();if(id==="squad")renderSquad();if(id==="market")renderMarket();if(id==="wallet")renderWallet();if(id==="profile")renderProfile();if(id==="fixtures")renderFixtures();
+}
+function toggleLanguage(){state.language=state.language==="en"?"am":"en";save("uf_demo_language",state.language);document.documentElement.lang=state.language;document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.dataset.i18n;if(i18n[state.language][k])el.textContent=i18n[state.language][k]});renderHome();showToast(state.language==="am"?"ቋንቋ ተቀይሯል":"Language changed")}
+function getUser(){try{const saved=JSON.parse(localStorage.getItem("uf_telegram_profile")||"null");if(saved)return saved}catch(e){}const u=window.Telegram?.WebApp?.initDataUnsafe?.user;return u||{first_name:"Player",username:"player"}}
+function initUser(){const u=getUser();const name=u.first_name||"Player";document.getElementById("welcomeName").textContent=name;document.getElementById("profileName").textContent=name;document.getElementById("profileUsername").textContent=u.username?"@"+u.username:"@player";document.getElementById("profileAvatar").textContent=name.charAt(0).toUpperCase()}
+async function ensureSupabaseSession(){
+ if(!supabaseClient)return null;
+ try{
+  let {data}=await supabaseClient.auth.getSession();
+  if(data?.session?.user)return data.session.user;
+  const r=await supabaseClient.auth.signInAnonymously();
+  if(r.error)throw r.error;
+  return r.data?.user||null;
+ }catch(e){console.warn("Supabase auth unavailable",e);return null}
+}
+
+const TELEGRAM_AUTH_URL=SUPABASE_URL+"/functions/v1/telegram-auth";
+let TELEGRAM_AUTHED=false;
+async function authenticateTelegram(){
+ if(!supabaseClient)return false;
+ try{
+  const user=await ensureSupabaseSession();
+  if(!user)return false;
+  const {data:sessionData}=await supabaseClient.auth.getSession();
+  const session=sessionData?.session;
+  const initData=window.Telegram?.WebApp?.initData||"";
+  if(!initData){
+   showToast("Open U-Fantasy inside Telegram");
+   return false;
+  }
+  const r=await fetch(TELEGRAM_AUTH_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token},body:JSON.stringify({initData})});
+  const out=await r.json().catch(()=>({}));
+  if(!r.ok||!out.ok)throw new Error(out.error||"Telegram authentication failed");
+  localStorage.setItem("uf_telegram_profile",JSON.stringify(out.user));
+  TELEGRAM_AUTHED=true;
+  const u=out.user;
+  const name=u.first_name||"Player";
+  document.getElementById("welcomeName").textContent=name;
+  document.getElementById("profileName").textContent=name;
+  document.getElementById("profileUsername").textContent=u.username?"@"+u.username:"@player";
+  document.getElementById("profileAvatar").textContent=name.charAt(0).toUpperCase();
+  return true;
+ }catch(e){console.warn("Telegram authentication unavailable",e);showToast("Telegram login could not be verified");return false}
+}
+
+async function loadSavedSquadFromSupabase(){
+ if(!supabaseClient)return false;
+ const user=await ensureSupabaseSession();
+ if(!user)return false;
+ try{
+  const {data,error}=await supabaseClient.from("squads").select("id,league,gameweek,formation,captain_player_id,vice_captain_player_id,created_at,updated_at").eq("user_id",user.id).order("updated_at",{ascending:false});
+  if(error)throw error;
+  if(!Array.isArray(data)||!data.length)return false;
+  for(const row of data){
+   const {data:items,error:itemError}=await supabaseClient.from("squad_players").select("player_id,slot_index").eq("squad_id",row.id).order("slot_index",{ascending:true});
+   if(itemError)throw itemError;
+   const pool=activeMarket(row.league);
+   const mapped=(items||[]).sort((a,b)=>Number(a.slot_index)-Number(b.slot_index)).map(x=>pool.find(p=>String(p.id)===String(x.player_id))).filter(Boolean);
+   state.squads[row.league]=mapped;
+   if(row.formation)save("uf_formation_"+row.league,row.formation);
+   const cap=pool.find(p=>String(p.id)===String(row.captain_player_id))||null;
+   const vice=pool.find(p=>String(p.id)===String(row.vice_captain_player_id))||null;
+   state.captains[row.league]={captain:cap,vice:vice};
+  }
+  state.squad=state.squads[state.squadLeague]||[];state.formation=loadFormation(state.squadLeague);saveAllSquads();saveCaptainData();DB_ONLINE=true;return true;
+ }catch(e){console.warn("Could not load saved squad",e);return false}
+}
+
+async function saveSquadToSupabase(league){
+ if(!supabaseClient)return false;
+ const user=await ensureSupabaseSession();
+ if(!user)return false;
+ const squad=state.squads[league]||[];const cap=state.captains[league]||{};
+ if(squad.length!==11||!cap.captain||!cap.vice)return false;
+ try{
+  const playersByName={};
+  const names=squad.map(p=>p.name);
+  const {data:dbPlayers,error:pErr}=await supabaseClient.from("players").select("id,name,league").eq("league",league).in("name",names);
+  if(pErr)throw pErr;
+  (dbPlayers||[]).forEach(p=>playersByName[p.name]=p);
+  const rows=squad.map(p=>playersByName[p.name]).filter(Boolean);
+  if(rows.length!==11)return false;
+  const capRow=playersByName[cap.captain.name],viceRow=playersByName[cap.vice.name];
+  if(!capRow||!viceRow)return false;
+  const {data:existing,error:eErr}=await supabaseClient.from("squads").select("id").eq("user_id",user.id).eq("league",league).maybeSingle();
+  if(eErr)throw eErr;
+  let squadId=existing?.id;
+  const payload={user_id:user.id,league,gameweek:5,formation:state.formation,captain_player_id:capRow.id,vice_captain_player_id:viceRow.id};
+  if(squadId){const {error}=await supabaseClient.from("squads").update(payload).eq("id",squadId);if(error)throw error;await supabaseClient.from("squad_players").delete().eq("squad_id",squadId)}
+  else{const {data,error}=await supabaseClient.from("squads").insert(payload).select("id").single();if(error)throw error;squadId=data.id}
+  const slotRows=rows.map((p,i)=>({squad_id:squadId,player_id:p.id,slot_index:i}));
+  const {error:spErr}=await supabaseClient.from("squad_players").insert(slotRows);if(spErr)throw spErr;
+  DB_ONLINE=true;return true;
+ }catch(e){console.warn("Supabase squad save failed",e);return false}
+}
+
+async function loadPublicDatabase(){
+ if(!supabaseClient){DB_ONLINE=false;return false;}
+ try{
+   const [contestRes,playerRes,fixtureRes]=await Promise.all([
+     supabaseClient.from("contests").select("id,league,title,gameweek,entry_fee_etb,prize_pool_etb,entrants,starts_at,deadline_at,status").order("starts_at",{ascending:true}),
+     supabaseClient.from("players").select("id,provider,provider_player_id,league,name,club,position,price_m,photo_url,active").eq("active",true).order("name",{ascending:true}),
+     supabaseClient.from("fixtures").select("id,provider_fixture_id,league,gameweek,home_team,away_team,kickoff_at,home_score,away_score,status").order("kickoff_at",{ascending:true})
+   ]);
+   if(contestRes.error)throw contestRes.error;
+   if(playerRes.error)throw playerRes.error;
+   if(fixtureRes.error)throw fixtureRes.error;
+
+   if(Array.isArray(playerRes.data)&&playerRes.data.length){
+     const mapPlayer=p=>({id:p.id,name:p.name,club:p.club||"",position:p.position,price:Number(p.price_m||0),photo:p.photo_url||"",source:p.provider||"Database",league:p.league});
+     LIVE_MARKET.epl=playerRes.data.filter(p=>p.league==="epl").map(mapPlayer);
+     LIVE_MARKET.ucl=playerRes.data.filter(p=>p.league==="ucl").map(mapPlayer);
+   }
+
+   if(Array.isArray(fixtureRes.data)&&fixtureRes.data.length){
+     FIXTURES.length=0;
+     fixtureRes.data.slice(0,20).forEach(x=>{
+       const d=new Date(x.kickoff_at);
+       FIXTURES.push({
+         home:x.home_team,away:x.away_team,
+         short:(x.home_team||"").slice(0,3).toUpperCase()+" vs "+(x.away_team||"").slice(0,3).toUpperCase(),
+         time:d.toLocaleString([], {weekday:"short",hour:"numeric",minute:"2-digit"}),
+         league:x.league,gameweek:x.gameweek,status:x.status
+       });
+     });
+   }
+
+   window.UF_DB_CONTESTS=Array.isArray(contestRes.data)?contestRes.data:[];
+   DB_ONLINE=true;
+   window.dispatchEvent(new Event("uf-db-ready"));
+   return true;
+ }catch(err){
+   DB_ONLINE=false;
+   console.warn("U-Fantasy database read failed:",err);
+   return false;
+ }
+}
+function dbStatusText(){return DB_ONLINE?"Database connected":"Demo data"}
+
+function renderHome(){
+ const f=document.getElementById("homeFixtures");f.innerHTML=FIXTURES.slice(0,4).map(x=>`<div class="fixture card"><div class="teams">${x.short}</div><div class="date">${x.time}</div><div class="score">VS</div></div>`).join("");
+ const leaders=DEMO_LEADERS.slice(0,5);document.getElementById("homeLeaderboard").innerHTML=leaders.map((x,i)=>`<div class="leader-row"><div class="rank">${i+1}</div><div class="usercell"><div class="avatar">${x[0].charAt(0)}</div><span class="username">${x[0]}</span></div><div class="pts">${x[1]} pts</div></div>`).join("");
+ document.getElementById("homePrize").textContent=money(200*100*PRIZE_POOL_RATE).replace(".00","");
+}
+function setContestLeague(l){state.contestLeague=l;save("uf_contest_league",l);document.getElementById("eplTab").classList.toggle("active",l==="epl");document.getElementById("uclTab").classList.toggle("active",l==="ucl");renderContests()}
+function winnerCount(players){return Math.max(10,Math.floor(players/200)*10)}
+const prizeWeights=[43,21.5,17.5,7.5,7.5,1.5,1.5,1.5,.75,.75];
+function prizeForRank(pool,rank,count){
+ let weights=[];
+ if(count<=10)weights=prizeWeights.slice(0,count);
+ else{weights=prizeWeights.slice();while(weights.length<count)weights.push(Math.max(.25,1.5-(weights.length-10)*.08))}
+ const total=weights.reduce((a,b)=>a+b,0);return pool*(weights[rank-1]/total)
+}
+function renderContests(){
+ const league=state.contestLeague, name=league==="epl"?"Premier League":"Champions League";
+ const dbContests=(window.UF_DB_CONTESTS||[]).filter(c=>c.league===league);
+ const data=dbContests.length?dbContests.map(c=>({entry:Number(c.entry_fee_etb||100),entrants:Number(c.entrants||0),deadline:new Date(c.deadline_at).toLocaleString([], {weekday:"short",hour:"numeric",minute:"2-digit"}),pool:Number(c.prize_pool_etb||0),gameweek:c.gameweek,status:c.status})):league==="epl"?[{entry:100,entrants:200,deadline:"Sat • 3:00 PM",pool:0,gameweek:5,status:"upcoming"}]:[{entry:100,entrants:200,deadline:"Tue • 8:00 PM",pool:0,gameweek:1,status:"upcoming"}];
+ document.getElementById("contestList").innerHTML=data.map((c,i)=>{const pool=c.pool||c.entry*c.entrants*PRIZE_POOL_RATE,count=winnerCount(c.entrants||200),top=[1,2,3].map(r=>prizeForRank(pool,r,count));return `<div class="card contest-card">
+ <div class="contest-head"><div><div class="contest-name">${name}</div><div class="contest-meta">Gameweek contest • closes ${c.deadline}</div></div><div style="text-align:right"><div class="entry">${money(c.entry)}</div><div class="contest-meta">entry</div></div></div>
+ <div class="pool"><div class="pool-top">PRIZE POOL • ${count} prizes</div><div class="pool-value">${money(pool)}</div><div class="prize-preview"><div class="prize-box"><b>🥇 1st</b><span>${money(top[0])}</span></div><div class="prize-box"><b>🥈 2nd</b><span>${money(top[1])}</span></div><div class="prize-box"><b>🥉 3rd</b><span>${money(top[2])}</span></div></div></div>
+ <div class="contest-footer"><span class="sub">Entrants update live</span><div class="wrap"><button class="btn secondary" onclick="openLeagueLeaderboard('${league}')">Leaderboard</button><button class="btn" onclick="joinContest(${c.entry})">Join</button></div></div>
+ </div>`}).join("");
+}
+function openLeagueLeaderboard(l){state.leaderLeague=l;save("uf_league",l);showPage("leaderboard")}
+function setLeaderboardLeague(l){state.leaderLeague=l;save("uf_league",l);renderLeaderboard()}
+function renderLeaderboard(){
+ const l=state.leaderLeague;document.getElementById("lbEpl").classList.toggle("active",l==="epl");document.getElementById("lbUcl").classList.toggle("active",l==="ucl");
+ const rows=DEMO_LEADERS.map((x,i)=>({name:l==="ucl"?x[0]+" FC":x[0],points:Math.max(42,x[1]-(l==="ucl"?5:0)),rank:i+1}));
+ const entrants=200,pool=entrants*100*PRIZE_POOL_RATE,count=winnerCount(entrants);
+ const podium=rows.slice(0,3).map((r,i)=>`<div class="pod ${i===0?"first":""}"><div class="medal">${["🥇","🥈","🥉"][i]}</div><div class="pod-name">${r.name}</div><div class="pod-points">${r.points} pts</div></div>`).join("");
+ const table=rows.map(r=>`<div class="table-row"><div class="rank">${r.rank}</div><div class="usercell"><div class="avatar">${r.name.charAt(0)}</div><div><div class="username">${r.name}</div><div class="locked">Points visible after kickoff</div></div></div><div class="points">${r.points}</div><div class="prize">${money(prizeForRank(pool,r.rank,count))}</div></div>`).join("");
+ document.getElementById("leaderboardBox").innerHTML=`<div style="padding:14px 14px 0"><div class="row"><b>${l==="epl"?"Premier League":"Champions League"}</b><span class="sub">Live leaderboard</span></div><div class="podium">${podium}</div></div><div class="table-head"><span>Rank</span><span>Player</span><span style="text-align:right">Pts</span><span style="text-align:right">Prize</span></div>${table}<div style="padding:13px"><div class="notice" style="margin:0">🔒 Before kickoff, other competitors' teams and points stay hidden. After the game starts, their points and team details can be revealed by the backend.</div></div>`;
+}
+function renderFixtures(){document.getElementById("fixturePage").innerHTML=FIXTURES.map(x=>`<div class="fixture card"><div class="teams">${x.home}</div><div class="sub" style="margin-top:3px">vs ${x.away}</div><div class="date">${x.time}</div></div>`).join("")}
+function setMarketLeague(l){state.marketLeague=l;save("uf_market_league",l);document.getElementById("mEpl").classList.toggle("active",l==="epl");document.getElementById("mUcl").classList.toggle("active",l==="ucl");renderMarket();if(!LIVE_MARKET[l].length)syncMarket(false)}
+function marketFallback(league){return league==="epl"?EPL_PLAYERS:UCL_PLAYERS}
+function activeMarket(league){return LIVE_MARKET[league].length?LIVE_MARKET[league]:marketFallback(league)}
+function setMarketStatus(text){const el=document.getElementById("marketSyncText");if(el)el.textContent=text}
+function normalizeFpl(data){
+ const teams={};(data.teams||[]).forEach(t=>teams[t.id]=t.name);
+ const pos={1:"GK",2:"DEF",3:"MID",4:"FWD"};
+ return (data.elements||[]).filter(p=>p.status!=="u").map((p,i)=>({id:"fpl-"+p.id,name:[p.first_name,p.second_name].filter(Boolean).join(" "),club:teams[p.team]||"Premier League",position:pos[p.element_type]||"MID",price:Number((p.now_cost/10).toFixed(1)),photo:p.photo||"",source:"Premier League live"}));
+}
+async function fetchJson(url){const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
+async function fetchEplLive(){const data=await fetchJson(FPL_API);const players=normalizeFpl(data);if(players.length<100)throw new Error("Incomplete EPL feed");return players}
+async function fetchUclLive(){
+ // TheSportsDB supplies the current UCL team/player records. We cache them to avoid hammering its public rate limit.
+ const teamData=await fetchJson(TSDB_BASE+"/search_all_teams.php?l=UEFA_Champions_League");
+ const teams=(teamData.teams||[]).filter(t=>t.idTeam);
+ if(!teams.length)throw new Error("No UCL teams returned");
+ const out=[];
+ for(let i=0;i<teams.length;i+=6){
+   const batch=teams.slice(i,i+6);
+   const results=await Promise.all(batch.map(async t=>{try{return await fetchJson(TSDB_BASE+"/lookup_all_players.php?id="+t.idTeam)}catch(e){return {players:[]}}}));
+   results.forEach((r,j)=>(r.players||[]).forEach(p=>{
+     const raw=(p.strPosition||p.strPositionShort||"").toLowerCase();
+     let position=raw.includes("goal")?"GK":raw.includes("def")||raw.includes("back")?"DEF":raw.includes("mid")||raw.includes("wing")?"MID":"FWD";
+     if(p.strSport!=="Soccer")return;
+     out.push({id:"tsdb-"+p.idPlayer,name:p.strPlayer,club:teams[i+j].strTeam||"UCL",position,price:estimateUclPrice(position),photo:p.strCutout||p.strThumb||"",source:"UCL live roster"});
+   }));
+   // Stay below the public API's request ceiling.
+   if(i+6<teams.length)await new Promise(r=>setTimeout(r,1100));
+ }
+ const unique=[...new Map(out.map(p=>[p.id,p])).values()];
+ if(unique.length<100)throw new Error("Incomplete UCL feed");
+ return unique;
+}
+function estimateUclPrice(pos){return ({GK:5.0,DEF:5.5,MID:7.5,FWD:8.5}[pos]||7.0)}
+function saveMarketCache(){localStorage.setItem(MARKET_CACHE_KEY,JSON.stringify({epl:LIVE_MARKET.epl,ucl:LIVE_MARKET.ucl,at:Date.now()}));save(MARKET_SYNC_KEY,Date.now());state.marketSync=Date.now()}
+function loadMarketCache(){try{const c=JSON.parse(localStorage.getItem(MARKET_CACHE_KEY)||"null");if(!c)return;if(Date.now()-Number(c.at||0)>24*60*60*1000)return;LIVE_MARKET.epl=Array.isArray(c.epl)?c.epl:[];LIVE_MARKET.ucl=Array.isArray(c.ucl)?c.ucl:[];state.marketSync=Number(c.at||0)}catch(e){}}
+async function syncMarket(force=false){
+ loadMarketCache();const now=Date.now();
+ if(!force&&state.marketSync&&now-state.marketSync<MARKET_REFRESH&&LIVE_MARKET[state.marketLeague].length){renderMarket();return}
+ setMarketStatus("Syncing current players…");
+ try{
+   if(state.marketLeague==="epl"){LIVE_MARKET.epl=await fetchEplLive();}
+   else{LIVE_MARKET.ucl=await fetchUclLive();}
+   saveMarketCache();setMarketStatus("Updated "+new Date(state.marketSync).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}));renderMarket();
+ }catch(err){
+   setMarketStatus("Live feed unavailable • showing cached/demo list");renderMarket();
+ }
+}
+function renderMarket(){
+ const q=(document.getElementById("marketSearch")?.value||"").toLowerCase();const arr=activeMarket(state.marketLeague);
+ const sync=state.marketSync?"Updated "+new Date(state.marketSync).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}):"Not synced yet";
+ setMarketStatus(sync);
+ document.getElementById("marketList").innerHTML=arr.filter(p=>(p.name+" "+p.club+" "+p.position).toLowerCase().includes(q)).map(p=>`<div class="market-row"><div class="row"><div class="usercell"><div class="avatar">${p.position}</div><div><div class="pname">${p.name}</div><div class="club">${p.club} • ${p.position}</div><div class="market-price-note">${p.source||"Fantasy market"}</div></div></div><div style="text-align:right"><div class="price">£${Number(p.price).toFixed(1)}M</div><button class="btn secondary" style="margin-top:6px;padding:8px 10px;min-height:32px" onclick="selectMarketPlayer('${p.id}')">Add</button></div></div></div>`).join("")||`<div class="empty">No players found.</div>`;
+}
+function selectMarketPlayer(id){const p=[...activeMarket("epl"),...activeMarket("ucl")].find(x=>x.id===id);if(!p)return;showToast(p.name+" selected");showPage("squad");openSlotPicker(p.position)}
+function getPool(){return [...activeMarket("epl"),...activeMarket("ucl")]}
+function setSquadLeague(league){state.squadLeague=league;state.squad=state.squads[league]||[];state.formation=loadFormation(league);save("uf_squad_league",league);renderSquad()}
+function openSquadMarket(){state.marketLeague=state.squadLeague;save("uf_market_league",state.marketLeague);showPage("market")}
+function renderFormations(){document.getElementById("formations").innerHTML=formations.map(f=>`<button class="formation ${state.formation===f?"active":""}" onclick="setFormation('${f}')">${f}</button>`).join("")}
+function setFormation(f){state.formation=f;save("uf_formation_"+state.squadLeague,f);renderSquad()}
+function slotLayout(){const [d,m,f]=state.formation.split("-").map(Number);return [["GK"],Array(d).fill("DEF"),Array(m).fill("MID"),Array(f).fill("FWD")]}
+function renderSquad(){
+ state.squad=state.squads[state.squadLeague]||[];renderFormations();
+ const e=document.getElementById("sEpl"),u=document.getElementById("sUcl");if(e)e.classList.toggle("active",state.squadLeague==="epl");if(u)u.classList.toggle("active",state.squadLeague==="ucl");
+ const label=document.getElementById("squadLeagueLabel");if(label)label.textContent=state.squadLeague==="epl"?"Premier League":"Champions League";
+ const pitch=document.getElementById("pitch");let idx=0,html="";
+ slotLayout().forEach(line=>{html+=`<div class="line">`;line.forEach(pos=>{const p=state.squad[idx];html+=`<button class="slot ${p?"filled":""}" onclick="${p?`chooseCaptainPlayer(${idx})`:`openSlotPicker('${pos}',${idx})`}"><div class="shirt">${p?"⚽":"+"}</div><div class="slot-name">${p?p.name:"Add "+pos}${p&&currentCaptain().captain&&String(currentCaptain().captain.id)===String(p.id)?'<span class="badge-cap">C</span>':''}${p&&currentCaptain().vice&&String(currentCaptain().vice.id)===String(p.id)?'<span class="badge-vc">V</span>':''}</div><div class="slot-price">${p?"£"+Number(p.price).toFixed(1)+"M":"tap to select"}</div></button>`;idx++});html+=`</div>`});
+ pitch.innerHTML=html;const cost=state.squad.reduce((a,p)=>a+(p?.price||0),0);document.getElementById("squadCost").textContent=`£${cost.toFixed(1)}M / £${SQUAD_BUDGET}M`;const rem=document.getElementById("remainingBudget");if(rem)rem.textContent=`£${Math.max(0,SQUAD_BUDGET-cost).toFixed(1)}M`;renderCaptainControls();
+}
+function openSlotPicker(pos,index=null){
+ const pool=activeMarket(state.squadLeague);document.getElementById("modalTitle").textContent=(state.squadLeague==="epl"?"Premier League":"Champions League")+" • Choose "+pos;
+ const players=pool.filter(p=>p.position===pos);document.getElementById("modalBody").innerHTML=`<div class="picker">${players.map(p=>`<button class="pick-row" onclick="choosePlayer('${String(p.id).replace(/'/g,"\\'")}',${index===null?-1:index})"><span><b>${p.name}</b><small style="display:block;color:var(--muted)">${p.club} • ${p.position}</small></span><strong class="gold">£${Number(p.price).toFixed(1)}M</strong></button>`).join("")||`<div class="empty">No ${pos} players available in this league.</div>`}</div>`;document.getElementById("modal").classList.add("show");
+}
+function choosePlayer(id,index){
+ const p=activeMarket(state.squadLeague).find(x=>String(x.id)===String(id));if(!p)return;if(p.league&&p.league!==state.squadLeague){showToast("Wrong league player");return}
+ if(state.squad.some((x,i)=>x&&String(x.id)===String(p.id)&&i!==index)){showToast("Player already in your squad");return}
+ const cost=state.squad.reduce((a,x,i)=>a+(x&&i!==index?Number(x.price):0),0)+Number(p.price);if(cost>SQUAD_BUDGET){showToast("Over the £100M budget");return}
+ if(index<0){const empty=state.squad.findIndex(x=>!x);if(empty>=0)state.squad[empty]=p;else{showToast("Your squad is full");return}}else state.squad[index]=p;const cap=currentCaptain();if(cap.captain&&!state.squad.some(x=>x&&String(x.id)===String(cap.captain.id)))cap.captain=null;if(cap.vice&&!state.squad.some(x=>x&&String(x.id)===String(cap.vice.id)))cap.vice=null;state.captains[state.squadLeague]=cap;saveCaptainData();setCurrentSquad(state.squad);saveAllSquads();closeModal();renderSquad();
+}
+async function saveSquad(){const s=state.squad.filter(Boolean),g=s.filter(p=>p.position==="GK").length,d=s.filter(p=>p.position==="DEF").length,m=s.filter(p=>p.position==="MID").length,f=s.filter(p=>p.position==="FWD").length;const cap=currentCaptain();if(s.length!==11||g!==1||d<3||m<2||f<1){showToast("Complete a valid 11-player squad first");return}if(!cap.captain||!cap.vice){showToast("Select a captain and vice-captain first");return}if(String(cap.captain.id)===String(cap.vice.id)){showToast("Captain and vice-captain must be different");return}setCurrentSquad(state.squad);saveAllSquads();saveCaptainData();save("uf_formation_"+state.squadLeague,state.formation);showToast("Saving squad…");const online=await saveSquadToSupabase(state.squadLeague);showToast(online?((state.squadLeague==="epl"?"Premier League":"Champions League")+" squad saved to U-Fantasy"):((state.squadLeague==="epl"?"Premier League":"Champions League")+" squad saved on this device"))}
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+function setWalletMode(mode){state.walletMode=mode;renderWallet()}
+function renderWallet(){
+ document.getElementById("walletBalance").textContent=money(state.balance);document.getElementById("depositTab").classList.toggle("active",state.walletMode==="deposit");document.getElementById("withdrawTab").classList.toggle("active",state.walletMode==="withdraw");
+ document.getElementById("walletForm").innerHTML=state.walletMode==="deposit"?`<div class="card" style="padding:18px"><div class="telebirr"><div class="sub">Add funds for your next contest entry</div><div class="number">${TELEBIRR_NUMBER}</div><div class="row" style="margin-top:10px"><div><div class="gold" style="font-size:22px;font-weight:950">ETB 100</div><div class="sub">Fixed entry top-up</div></div><button class="btn secondary" onclick="copyText(TELEBIRR_NUMBER)">Copy</button></div></div><div class="field"><label>Telebirr message</label><textarea id="depSms" placeholder="Paste the Telebirr SMS you received after sending ETB 100..."></textarea></div><button class="btn" style="width:100%" onclick="verifyDemoDeposit()">Verify ETB 100</button><div id="depStatus"></div><div class="sub" style="margin-top:10px">Wallet top-ups are fixed at ETB 100. Demo verification only until the secure backend is connected.</div></div>`:
+ `<div class="card" style="padding:18px"><div class="field"><label>Withdrawal amount (ETB)</label><input id="wdAmount" type="number" min="1" placeholder="Enter amount"></div><div class="field"><label>Telebirr number</label><input id="wdNumber" inputmode="tel" placeholder="09XXXXXXXX"></div><button class="btn" style="width:100%" onclick="requestWithdraw()">Request withdrawal</button><div class="sub" style="margin-top:10px">Withdrawals are for winnings or remaining wallet funds. No transaction history is shown in the app.</div></div>`;
+}
+function parseSms(s){const amountMatch=s.match(/(?:ETB|Birr|ብር)\s*([0-9,]+(?:\.\d{1,2})?)/i)||s.match(/([0-9,]+(?:\.\d{1,2})?)\s*(?:ETB|Birr|ብር)/i);const tx=s.match(/(?:transaction|txn|tx|reference|ref)\s*(?:no|number|id)?\s*[:#-]?\s*([A-Z0-9-]{5,})/i);const recipient=s.match(/(?:to|recipient|account)\s*[:#-]?\s*(09\d{8,})/i);const success=/(successful|success|completed|sent successfully|የተሳካ|ተሳክቷል)/i.test(s);return{amount:amountMatch?Number(amountMatch[1].replace(/,/g,"")):0,txid:tx?tx[1]:"",recipient:recipient?recipient[1]:"",success}}
+function verifyDemoDeposit(){
+ const sms=document.getElementById("depSms").value.trim(),st=document.getElementById("depStatus");
+ if(!sms){st.innerHTML='<div class="status bad">Paste the Telebirr message first.</div>';return}
+ st.innerHTML='<div class="status wait">Checking message…</div>';
+ setTimeout(()=>{const p=parseSms(sms),used=JSON.parse(localStorage.getItem("uf_used_txids")||"[]"),reasons=[];if(!p.success)reasons.push("success/completed status not found");if(p.amount!==100)reasons.push("the message must show exactly ETB 100");if(!p.txid)reasons.push("transaction ID not found");if(p.txid&&used.includes(p.txid))reasons.push("transaction already used");if(p.recipient&&TELEBIRR_NUMBER!=="09XXXXXXXX"&&p.recipient!==TELEBIRR_NUMBER)reasons.push("recipient number does not match");if(reasons.length){st.innerHTML='<div class="status bad">Rejected: '+reasons.join("; ")+'.</div>';return}state.balance+=100;save("uf_demo_balance",state.balance);used.push(p.txid);save("uf_used_txids",used);st.innerHTML='<div class="status ok">Accepted • ETB 100 added to your wallet.</div>';renderWallet()},850);
+}
+function requestWithdraw(){const a=Number(document.getElementById("wdAmount").value),n=document.getElementById("wdNumber").value.trim();if(!a||a<=0||a>state.balance){showToast("Enter a valid amount within your balance");return}if(!/^09\d{8,9}$/.test(n)){showToast("Enter a valid Telebirr number");return}state.balance-=a;save("uf_demo_balance",state.balance);showToast("Withdrawal request submitted")}
+function copyText(t){navigator.clipboard?.writeText(t);showToast("Copied")}
+function joinContest(entry){if(state.balance<entry){showToast("Insufficient ETB balance");showPage("wallet");return}state.balance-=entry;save("uf_demo_balance",state.balance);state.entries++;save("uf_demo_entries",state.entries);showToast("Contest joined");renderWallet()}
+function inviteFriends(){const text=encodeURIComponent("Join me on U-Fantasy ⚽🏆");const url=encodeURIComponent(window.location.href);const tg="https://t.me/share/url?url="+url+"&text="+text;if(window.Telegram?.WebApp?.openTelegramLink)Telegram.WebApp.openTelegramLink(tg);else window.open(tg,"_blank")}
+function applyI18n(){document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.dataset.i18n;if(i18n[state.language][k])el.textContent=i18n[state.language][k]})}
+function boot(){
+ if(window.Telegram?.WebApp){Telegram.WebApp.ready();Telegram.WebApp.expand()}
+ initUser();applyI18n();loadMarketCache();renderHome();renderContests();renderLeaderboard();renderSquad();renderMarket();renderWallet();renderProfile();renderFixtures();
+ authenticateTelegram().then(()=>loadPublicDatabase()).then(async ok=>{
+   if(ok){
+     renderHome();renderContests();renderFixtures();renderMarket();
+     const restored=await loadSavedSquadFromSupabase();
+     if(restored)renderSquad();
+     showToast(restored?"U-Fantasy database + squad connected":"U-Fantasy database connected");
+   }
+   syncMarket(false);
+ });
+ setTimeout(()=>document.getElementById("loading").classList.add("hide"),650);
+}
+function renderProfile(){const u=getUser();document.getElementById("profileName").textContent=u.first_name||"Player";document.getElementById("profileUsername").textContent=u.username?"@"+u.username:"@player";document.getElementById("profileAvatar").textContent=(u.first_name||"P").charAt(0).toUpperCase();document.getElementById("statPoints").textContent="0";document.getElementById("statEntries").textContent=state.entries;document.getElementById("statRank").textContent="#—"}
+boot();
+</script>
+</body>
+</html>
